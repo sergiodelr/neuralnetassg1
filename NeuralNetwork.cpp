@@ -1,5 +1,5 @@
 #include "NeuralNetwork.h"
-
+#include <cmath>
 
 // Default constructor
 NeuralNetwork::NeuralNetwork()
@@ -28,6 +28,7 @@ NeuralNetwork::NeuralNetwork(double learningRate, double momentum, double lambda
 pair<double, double> NeuralNetwork::train(vector<TrainingExample>& examples, int numberOfTrainingExamples, int numberOfValidationExamples)
 {
 	vector<ExampleError> exampleErrorsTraining, exampleErrorsValidation;
+
 	for (int i = 0; i < numberOfTrainingExamples; i++)
 	{
 		exampleErrorsTraining.push_back(feedForward(examples[i]));
@@ -39,7 +40,7 @@ pair<double, double> NeuralNetwork::train(vector<TrainingExample>& examples, int
 		exampleErrorsValidation.push_back(feedForward(examples[i]));
 	}
 
-	
+	return make_pair(calculateAverageRmse(exampleErrorsTraining), calculateAverageRmse(exampleErrorsValidation));
 }
 
 // Makes a feedforward pass of the training example through the network and returns the error
@@ -72,8 +73,18 @@ void NeuralNetwork::backPropagate(TrainingExample& example, ExampleError& error)
 	layers[0].backPropagateHiddenLayer(layers[1].getLocalGradients, layers[1].getPreviousWeights, tempError);
 }
 
-double NeuralNetwork::calculateRmse(vector<TrainingExample>&)
+double NeuralNetwork::calculateAverageRmse(vector<ExampleError>& errors)
 {
-	return 0.0;
+	double leftErrorSum = 0, rightErrorSum = 0;
+	for (int i = 0; i < errors.size(); i++)
+	{
+		leftErrorSum += errors[i].leftError * errors[i].leftError;
+		rightErrorSum += errors[i].rightError * errors[i].rightError;
+	}
+	double leftRmse = sqrt(leftErrorSum / errors.size());
+	double rightRmse = sqrt(rightErrorSum / errors.size());
+
+	return (leftRmse + rightRmse) / 2;
 }
+
 

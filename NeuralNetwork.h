@@ -19,6 +19,6 @@ private:
 	double momentum, learningRate, lambda;
 	ExampleError feedForward(TrainingExample&);
 	void backPropagate(TrainingExample&, ExampleError&);
-	double calculateRmse(vector<TrainingExample>&);
+	double calculateAverageRmse(vector<ExampleError>&);
 	Layer layers[2];
 };
