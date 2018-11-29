@@ -43,6 +43,11 @@ pair<double, double> NeuralNetwork::train(vector<TrainingExample>& examples, int
 	return make_pair(calculateAverageRmse(exampleErrorsTraining), calculateAverageRmse(exampleErrorsValidation));
 }
 
+double NeuralNetwork::testNetwork(vector<TrainingExample>& examples, int numberOfTrainingExamples, int numberOfValidationExamples)
+{
+
+}
+
 vector<vector<double>> NeuralNetwork::getHiddenWeights()
 {
 	return layers[0].getWeights();

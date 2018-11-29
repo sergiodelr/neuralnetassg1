@@ -14,6 +14,7 @@ public:
 	NeuralNetwork();
 	NeuralNetwork(double, double, double, int);
 	pair<double, double> train(vector<TrainingExample>&, int, int);
+	double testNetwork(vector<TrainingExample>&, int, int);
 	vector<vector<double>> getHiddenWeights();
 	vector<vector<double>> getOutputWeights();
 	void newEpoch();
