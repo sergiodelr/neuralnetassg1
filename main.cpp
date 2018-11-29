@@ -9,13 +9,15 @@ using namespace std;
 bool stoppingCriterion(vector<double>& errors)
 {
 	int lastErrors = 6;
-	if (errors.empty() || errors.size() < lastErrors + 1)
+	if (errors.empty() || errors.size() < lastErrors)
 		return false;
-	int i = 0;
+	if (errors[errors.size() - 1] - errors[errors.size() - lastErrors] < 0.0005)
+		return true;
+	int i = 1;
 	bool stop = true;
 	while (stop && i < lastErrors)
 	{
-		if (errors[errors.size() - i - 1] < errors[errors.size() - i - 2])
+		if (errors[errors.size() - i] < errors[errors.size() - i - 1])
 			stop = false;
 		i++;
 	}
@@ -25,7 +27,7 @@ bool stoppingCriterion(vector<double>& errors)
 
 int main(int argc, char* argv[])
 {
-	ifstream csvFile("train.csv");
+	ifstream csvFile("C:\\Users\\sgo_a\\Documents\\nn\\NeuralNetworksAssg1\\NeuralNetworksAssg1\\x64\\Debug\\cleanNormalisedTest.csv");
 	NNData trainingData;
 
 	// Read data from csv 
@@ -44,18 +46,51 @@ int main(int argc, char* argv[])
 	trainingData.randomiseAll();
 	trainingData.divideData(0.70);
 	trainingData.divideValidationData(0.15);
-	
-	double learningRate = 0.3, momentum = 0.01, hiddenNeurons = 4, lambda = 0.7;
+
+	double learningRate = 0.1, momentum = 0.01, lambda = 0.7;
+	int hiddenNeurons = 4;
 	NeuralNetwork neuralNetwork(learningRate, momentum, lambda, hiddenNeurons);
 	vector<double> validationErrors;
 	pair<double, double> errorPair;
-	int epoch = 1;
+
+	int epoch = 0;
+	vector<vector<vector<double>>> hiddenWeightsForEpoch;
+	vector<vector<vector<double>>> outputWeightsForEpoch;
+
 	while (!stoppingCriterion(validationErrors))
 	{
-		errorPair = neuralNetwork.train(*(trainingData.getExamples()), trainingData.getNumberOfTrainingExamples, trainingData.getNumberOfValidationExamples);
+		errorPair = neuralNetwork.train(*(trainingData.getExamples()), trainingData.getNumberOfTrainingExamples(), trainingData.getNumberOfValidationExamples());
 		validationErrors.push_back(errorPair.second);
+		hiddenWeightsForEpoch.push_back(neuralNetwork.getHiddenWeights());
+		outputWeightsForEpoch.push_back(neuralNetwork.getOutputWeights());
 		cout << "Epoch " << epoch << ": " << "Training error: " << errorPair.first << " Validation error: " << errorPair.second << endl;
+		
+		epoch++;
 	}
-	
+
+	int selectedEpoch = epoch - 6;
+
+	cout << endl << "Hidden weights for selected epoch no. " << selectedEpoch << endl << endl;
+
+	for (int i = 0; i < hiddenWeightsForEpoch[selectedEpoch].size(); i++)
+	{
+		for (int j = 0; j < hiddenWeightsForEpoch[selectedEpoch][i].size(); j++)
+		{
+			cout << hiddenWeightsForEpoch[selectedEpoch][i][j] << " ";
+		}
+		cout << endl;
+	}
+
+	cout << endl << "Output weights for selected epoch no. " << selectedEpoch << endl << endl;
+
+	for (int i = 0; i < outputWeightsForEpoch[selectedEpoch].size(); i++)
+	{
+		for (int j = 0; j < outputWeightsForEpoch[selectedEpoch][i].size(); j++)
+		{
+			cout << outputWeightsForEpoch[selectedEpoch][i][j] << " ";
+		}
+		cout << endl;
+	}
+
 	return 0;
 }

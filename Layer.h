@@ -16,6 +16,7 @@ public:
 	void backPropagateOutputLayer(double, double, vector<double>*);
 	void backPropagateHiddenLayer(vector<double>*, vector<vector<double>>*, vector<double>&);
 	void reset();
+	vector<vector<double>> getWeights();
 private:
 	double sigmoid(double);
 	vector<vector<double>> weights;

@@ -24,7 +24,7 @@ void NNData::addExample(double frontSensor, double backSensor, double leftWheel,
 // Divides the data into training and testing according to the percentage stated
 void NNData::divideData(double trainingPercentage)
 {
-	numberOfTrainingExamples = dataExamples.size() * trainingPercentage
+	numberOfTrainingExamples = dataExamples.size() * trainingPercentage;
 }
 
 // Divides the remaining data into test and validation according to the validation percentage of the TOTAL data
@@ -58,6 +58,3 @@ vector<TrainingExample>* NNData::getExamples()
 {
 	return &dataExamples;
 }
-
-
-

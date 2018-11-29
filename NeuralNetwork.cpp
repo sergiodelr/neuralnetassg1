@@ -43,6 +43,22 @@ pair<double, double> NeuralNetwork::train(vector<TrainingExample>& examples, int
 	return make_pair(calculateAverageRmse(exampleErrorsTraining), calculateAverageRmse(exampleErrorsValidation));
 }
 
+vector<vector<double>> NeuralNetwork::getHiddenWeights()
+{
+	return layers[0].getWeights();
+}
+
+vector<vector<double>> NeuralNetwork::getOutputWeights()
+{
+	return layers[1].getWeights();
+}
+
+void NeuralNetwork::newEpoch()
+{
+	layers[0].reset();
+	layers[1].reset();
+}
+
 // Makes a feedforward pass of the training example through the network and returns the error
 // param example - the training example to be passed through the network
 // return - error between expected and actual output
@@ -65,12 +81,15 @@ ExampleError NeuralNetwork::feedForward(TrainingExample& example)
 
 void NeuralNetwork::backPropagate(TrainingExample& example, ExampleError& error)
 {
-	vector<double> tempError;
+	vector<double> tempError, tempExample;
 	tempError.push_back(error.leftError);
 	tempError.push_back(error.rightError);
 
+	tempExample.push_back(example.frontSensor);
+	tempExample.push_back(example.backSensor);
+
 	layers[1].backPropagateOutputLayer(error.leftError, error.rightError, layers[0].getActivations());
-	layers[0].backPropagateHiddenLayer(layers[1].getLocalGradients, layers[1].getPreviousWeights, tempError);
+	layers[0].backPropagateHiddenLayer(layers[1].getLocalGradients(), layers[1].getPreviousWeights(), tempExample);
 }
 
 double NeuralNetwork::calculateAverageRmse(vector<ExampleError>& errors)
@@ -86,5 +105,3 @@ double NeuralNetwork::calculateAverageRmse(vector<ExampleError>& errors)
 
 	return (leftRmse + rightRmse) / 2;
 }
-
-

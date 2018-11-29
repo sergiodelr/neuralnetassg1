@@ -1,4 +1,5 @@
 #include "Layer.h"
+#include <ctime>
 
 using namespace std;
 
@@ -10,7 +11,10 @@ Layer::Layer()
 Layer::Layer(int nodesInPreviousLayer, int nodesCurrentLayer, double lambda, double learningRate, double momentum)
 {
 	size = nodesCurrentLayer;
-	weights = vector<vector<double>>(size, vector<double>(nodesInPreviousLayer + 1, (double)rand() / RAND_MAX));
+	weights = vector<vector<double>>(size, vector<double>(nodesInPreviousLayer + 1, 0));
+	for (int i = 0; i < size; i++)
+		for (int j = 0; j < nodesInPreviousLayer + 1; j++)
+			weights[i][j] = (double)rand() / RAND_MAX;
 	previousWeights = weights;
 	activations = vector<double>(size, 0);
 	localGradients = vector<double>(size, 0);
@@ -21,11 +25,10 @@ Layer::Layer(int nodesInPreviousLayer, int nodesCurrentLayer, double lambda, dou
 }
 
 // Performs a forward pass of the data from the previous layer and computes activations
-// param previousActivations - Activations from previous layer. Has to be the same size as the
-//								second dimension of weights.
+// param previousActivations - Activations from previous layer. Has to be the same size as of nodesInPreviousLayer.
 void Layer::feedForward(vector<double>* previousActivations)
 {
-	if (previousActivations->size() == weights[0].size())
+	if (previousActivations->size() == weights[0].size() - 1)
 	{
 		// Perform dot product between previous activations and weights
 		for (int i = 0; i < size; i++)
@@ -70,6 +73,8 @@ void Layer::backPropagateOutputLayer(double leftError, double rightError, vector
 
 	vector<vector<double>> currentWeightDeltas(size, vector<double>(weights[0].size(), 0));
 
+	previousWeights = weights;
+
 	for (int i = 0; i < size; i++)
 	{
 		for (int j = 0; j < weights[i].size() - 1; j++)
@@ -85,8 +90,7 @@ void Layer::backPropagateOutputLayer(double leftError, double rightError, vector
 	for (int i = 0; i < size; i++)
 		for (int j = 0; j < weights[i].size(); j++)
 			weights[i][j] += currentWeightDeltas[i][j];
-	
-	previousWeights = weights;
+
 	previousWeightDeltas = currentWeightDeltas;
 }
 
@@ -103,7 +107,6 @@ void Layer::backPropagateHiddenLayer(vector<double>* localGradientsOutput, vecto
 		localGradients[i] = lambda * activations[i] * (1 - activations[i]) * sumTerm;
 	}
 
-
 	vector<vector<double>> currentWeightDeltas(size, vector<double>(weights[0].size(), 0));
 
 	for (int i = 0; i < size; i++)
@@ -111,7 +114,7 @@ void Layer::backPropagateHiddenLayer(vector<double>* localGradientsOutput, vecto
 		for (int j = 0; j < weights[i].size() - 1; j++)
 		{
 			// Compute weight deltas
-			currentWeightDeltas[i][j] = learningRate * localGradients[i] * (*example)[j] + momentum * previousWeightDeltas[i][j];
+			currentWeightDeltas[i][j] = learningRate * localGradients[i] * example[j] + momentum * previousWeightDeltas[i][j];
 		}
 		// Compute delta for bias
 		currentWeightDeltas[i][weights[i].size() - 1] = learningRate * localGradients[i] + momentum * previousWeightDeltas[i][weights[i].size() - 1];
@@ -137,7 +140,12 @@ void Layer::reset()
 	}
 }
 
+vector<vector<double>> Layer::getWeights()
+{
+	return weights;
+}
+
 double Layer::sigmoid(double x)
 {
-	return 1 / (1 + exp(lambda * x));
+	return 1.0 / (1 + exp(-lambda * x));
 }
